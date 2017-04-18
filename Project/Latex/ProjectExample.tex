@@ -1,0 +1,58 @@
+%\documentclass[11pt,conference,compsocconf,letterpaper]{IEEEtran}
+\documentclass[12pt,journal,final,finalsubmission,onecolumn]{IEEEtran}
+%% INFOCOM 2012 addition:
+\makeatletter
+\def\ps@headings{%
+\def\@oddhead{\mbox{}\scriptsize\rightmark \hfil \thepage}%
+\def\@evenhead{\scriptsize\thepage \hfil \leftmark\mbox{}}%
+\def\@oddfoot{}%
+\def\@evenfoot{}}
+\makeatother \pagestyle{headings}
+
+\hyphenation{op-tical net-works semi-conduc-tor}
+\usepackage{epsfig}
+\usepackage{url}
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{theorem}
+\newtheorem{Theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{result}{Result}
+\newtheorem{question}{Question}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage{color}
+\usepackage{amsmath}
+\newcommand{\bbf}[1]{\mbox{\boldmath$#1$\unboldmath}}
+\newcommand{\red}[1]{\textcolor{red}{\bf #1}}
+\newcommand{\blue}[1]{\textcolor{blue}{\bf #1}}
+\newcommand{\warn}[1]{}
+
+\def\IEEEkeywordsname{Keywords}
+\pagenumbering{arabic}
+%\centerfigcaptionstrue
+
+\def\linespaces{1}
+\def\baselinestretch{\linespaces}
+
+\begin{document}
+
+\title{Project Title}
+
+\author{\IEEEauthorblockN{Wei Yu\IEEEauthorrefmark{1}} \\
+\IEEEauthorblockA{\IEEEauthorrefmark{2}Computer and Information Sciences, Towson University \\
+Email: wyu@towson.edu}%\\
+}
+
+\maketitle
+
+\textbf{Motivation:} This is the motivation of this project....
+
+\textbf{Challenges:} This is challenge ... 
+
+\textbf{Proposed Research:} This is your proposed solution ....
+
+\textbf{Working and Evaluation Plan} This is your working and evaluation plan ...
+
+\end{document}

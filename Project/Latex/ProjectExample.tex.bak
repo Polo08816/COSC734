@@ -1,0 +1,1182 @@
+\documentclass[11pt,conference,compsocconf,letterpaper]{IEEEtran}
+%\documentclass[10pt,journal,final,finalsubmission,twocolumn]{IEEEtran}
+%% INFOCOM 2012 addition:
+\makeatletter
+\def\ps@headings{%
+\def\@oddhead{\mbox{}\scriptsize\rightmark \hfil \thepage}%
+\def\@evenhead{\scriptsize\thepage \hfil \leftmark\mbox{}}%
+\def\@oddfoot{}%
+\def\@evenfoot{}}
+\makeatother \pagestyle{headings}
+
+\hyphenation{op-tical net-works semi-conduc-tor}
+\usepackage{epsfig}
+\usepackage{url}
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{theorem}
+\newtheorem{Theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{result}{Result}
+\newtheorem{question}{Question}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage{color}
+\usepackage{amsmath}
+\newcommand{\bbf}[1]{\mbox{\boldmath$#1$\unboldmath}}
+\newcommand{\red}[1]{\textcolor{red}{\bf #1}}
+\newcommand{\blue}[1]{\textcolor{blue}{\bf #1}}
+\newcommand{\warn}[1]{}
+
+\def\IEEEkeywordsname{Keywords}
+\pagenumbering{arabic}
+%\centerfigcaptionstrue
+
+\def\linespaces{0.88}
+\def\baselinestretch{\linespaces}
+
+\begin{document}
+
+\title{A Novel En-route Filtering Scheme against False Data Injection Attacks in Cyber-Physical Networked Systems}
+
+\author{\IEEEauthorblockN{Xinyu Yang\IEEEauthorrefmark{1}, Jie Lin\IEEEauthorrefmark{1}, Paul Moulema\IEEEauthorrefmark{2},Wei Yu\IEEEauthorrefmark{2}, Xinwen Fu\IEEEauthorrefmark{3} and Wei Zhao\IEEEauthorrefmark{4}} %\\
+\IEEEauthorblockA{\IEEEauthorrefmark{1}Xi'an Jiaotong University,
+Emails: yxyphd@mail.xjtu.edu.cn, Dr.linjie@stu.xjtu.edu.cn} %\\
+\IEEEauthorblockA{\IEEEauthorrefmark{2}Towson University,
+Email: pmoulema@gmail.com, wyu@towson.edu}%\\
+\IEEEauthorblockA{\IEEEauthorrefmark{3}University of Massachusetts Lowell,
+Email: xinwenfu@cs.uml.edu} %\\
+\IEEEauthorblockA{\IEEEauthorrefmark{3}University of Macau,
+Email: WeiZhao@umac.mo} }
+
+%\author{Xinyu Yang, Jie Lin, Paul Moulema, Wei Yu, Xinwen Fu, and Wei Zhao
+%\thanks{Xiyu Yang and Jie Lin are with Xi'an Jiaotong University, Xi'an, Shan'xi, P.R. China, (Emails: %yxyphd@mail.xjtu.edu.cn, Dr.linjie@stu.xjtu.edu.cn). Paul Moulema and Wei Yu are with the department of Computer and %Information Sciences, Towson University, MD 21252. (Emails: pmoulema@gmail.com, wyu@towson.edu). Xinwen Fu is with %Department of Computer Science, University of Massachusetts Lowell, Lowell, MA 01854. (Email: xinwenfu@cs.uml.edu). Wei %Zhao is the Rector of University of Macau, Macau SAR, China (Email: WeiZhao@umac.mo).}}
+
+%\AUTHOR{\IEEEauthorblockN{Xinyu Yang and Jie Lin}
+%\IEEEauthorblockA{Xi'an Jiaotong University, Xi'an, Shaanxi, P.R. China\\
+%Email: Dr.linjie@stu.xjtu.edu.cn and yxyphd@mail.xjtu.edu.cn}
+%\and
+%\IEEEauthorblockN{Paul Moulema and Wei Yu}
+%\IEEEauthorblockA{Towson University, MD 21252\\
+%Email: pmoulema@gmail.com and wyu@towson.edu}\\
+%\and
+%\IEEEauthorblockN{David Su}
+%\IEEEauthorblockA{National Institute of Standards and Technology, Gaithersburg, MD 20899\\
+%Email: dsu@nist.gov\\}}
+
+\maketitle
+
+\begin{abstract}
+
+In Cyber-Physical Networked Systems (CPNS), attackers could inject
+false measurements to the controller through compromised sensor
+nodes, which not only threaten the security of the system, but also
+consumes network resources. To deal with this issue, a number of
+en-route filtering schemes have been designed for wireless sensor
+networks. However, these schemes either lack resilience to the
+number of compromised nodes or depend on the statically configured
+routes and node localization, which are not suitable for CPNS. In this paper, we propose a
+{\em Polynomial-based Compromised-Resilient En-route Filtering
+scheme (PCREF)}, which can filter false injected data effectively
+and achieve a high resilience to the number of compromised nodes
+without relying on static routes and node localization.
+Particularly, PCREF adopts polynomials instead of MACs (message authentication codes) for endorsing
+measurement reports to achieve the resilience to attacks. Each node
+stores two types of polynomials: authentication polynomial and check
+polynomial derived from the primitive polynomial, and used for
+endorsing and verifying the measurement reports.
+Via extensive theoretical analysis and simulation experiments, our
+data show that PCREF achieves better filtering capacity and
+resilience to the large number of compromised nodes in comparison
+to the existing schemes.
+
+\end{abstract}
+\begin{keywords}
+Cyber-physical networked system, false measurement report, sensor
+networks, polynomial-based en-route filtering.
+\end{keywords}
+
+%\vspace{-2mm}
+\section{Introduction}\label{sec:intruduction}
+%\vspace{-2mm}
+
+Monitoring and controlling physical systems through geographically
+distributed sensors and actuators have become an important task in
+numerous environment and infrastructure applications. These
+applications have received a renewed attention because of the
+advances in sensor network technologies and new development in
+cyber-physical networked systems (CPNS) \cite{CPSweeks}.
+CPNS, consisting of sensor nodes, actuators, controller, and wireless networks, have been widely used to
+monitor and affect local and remote physical environments \cite{VL07}. Typical CPNS includes transportation
+networks, vehicular networks, networks of unmanned vehicles and others \cite{CPN}.
+CPNS can make on how we interact with the physical world.
+
+In CPNS, sensor nodes obtain the measurement from the
+mobile physical components, process the measurements and send
+measured data to the controller through networks. According to these
+measurements, the controller estimates the states of physical
+systems and sends feedback commands to the actuators, which control
+physical environments and mobile systems. Obviously, to facilitate
+unprecedented interactions between human beings and the physical
+world, sensor networks become a crucial ingredient of
+CPNS due to the need for coupling geographically
+distributed computing devices with physical elements. The
+proliferation of affordable sensor network technologies has
+significantly contributed to recent progress in CPNS.
+
+CPNS may operate in hostile environments and the included sensor nodes lacking tamper-resistance hardware increases the possibility to be compromised by attackers. The attacker can inject false measurement reports to the controller through the compromised nodes. This causes the controller to estimate wrong system states \cite{YL09} and poses the dangerous threats to the system. The 2003 Eastern blackout was caused by the fact that programs for key areas were abnormal and failed to provide the system operators the correct state information \cite{Northeast}. The false reports consume lots of network and computation resources and shorten the lifetime of sensor networks and CPNS \cite{survey}. Hence, to ensure the normal operation of the system, it is critical to filter false data at forwarding nodes before arriving at the controller.
+
+In the past, a number of schemes have been designed to filter the
+false injected data in sensor networks
+\cite{SEF,LBRS,GRSEF,LEDS,IHA,CCEF,DEFS,EAB}. However, those schemes
+have their limitations and cannot be used to effectively deal with
+attacks related to CPNS. For example, SEF \cite{SEF} and
+IHA \cite{IHA} have the $T$-threshold limitation, that is, if the
+attackers compromise $T$ nodes from different groups, they could
+launch node impersonating attack on legitimate nodes. Thus, it lacks
+resilience to the increased number of compromised nodes. LBRS
+\cite{LBRS}, LEDS \cite{LEDS} and CCEF \cite{CCEF} improve the
+resilience to the number of compromised nodes by introducing static
+routes for data dissemination and node localization.
+The static routes are not only vulnerable to node failure and denial-of-service (DoS) attacks (causing the controller not to receive measurement on time and loss of control over the system), but also not suitable for monitoring mobile physical components or systems. DEFS \cite{DEFS} and GRSEF \cite{GRSEF} do not depend on static routes, but they achieve low resilience to the number of compromised nodes, and DEFS introduces lots of extra control messages, incurring energy resources on nodes.
+
+In this paper, we propose a Polynomial-based Compromised-Resilient
+En-route Filtering scheme (PCREF) for CPNS, which could
+filter false injected data effectively and achieve a high resilience
+to the number of compromised nodes without relying on static data
+dissemination routes and node localization. PCREF is more
+suitable for CPNS to monitor and affect mobile physical
+components and systems.
+PCREF adopts polynomials instead of MACs (message authentication codes) to verify reports, and can mitigate node impersonating attacks against legitimate nodes. In our scheme, two types of nodes are considered: sensing node and forwarding node. Each node stores two types of polynomials: authentication polynomial and check polynomial, derived by different primitive polynomials. The first one is used to endorse the report, and the second one is used to verify the received report. Each sensing node stores the authentication polynomial of local cluster and the check polynomial of
+other clusters with a pre-defined probability. Each forwarding node stores the check polynomial of each cluster
+with the same probability. Because sharing the authentication information between nodes with a pre-defined probability avoids the node association to share authentication information between source nodes and forwarding nodes, our scheme does not depend on static routes. The cluster-based polynomial assignment ensures that different clusters are assigned different primitive polynomials and suppresses the effect of compromised nodes into local area. Hence, PCREF achieves high resilience against the increased number of compromised nodes.
+
+Via extensive theoretical analysis and simulation experiments, we evaluate the effectiveness of PCREF in comparison with SEF \cite{SEF}, LBRS \cite{LBRS}, GRSEF \cite{GRSEF} and LEDS \cite{GRSEF} in terms of filtering efficiency, filtering capability, and resilience to the number of compromised nodes. Our data show that PCREF achieves better performance than existing schemes. For example, the filtering efficiency of PCREF increases as the forwarded hop increases, and it is always greater than that of existing schemes. When forwarded hops reach to $20$, PCREF could filter out all false data, while the best of other schemes could only filter out $70\%$. In terms of filtering capability, PCREF could filter false data within $7$ forwarded hops with a large number of compromised nodes, while other schemes could lose the en-route filtering capability completely. With the same number of compromised nodes, the compromised area ratio of PCREF is the lowest in comparison with the existing schemes.
+
+The remainder of the paper is organized as follows: We introduce the network and threat models in the Section~\ref{sec:perparation}. We present our proposed scheme in Section~\ref{sec:our scheme}. We analyze the security of our scheme in Section~\ref{sec:security}. %and its overhead in Section~\ref{sec:overhead}.
+In Section~\ref{sec:simulation}, we show both analytical and experimental results to validate our findings. We review related work in Section~\ref{sec:relate} and conclude this paper in Section~\ref{sec:conclusion}.
+
+\vspace{-2mm}
+\section{Network and Threat Models}\label{sec:perparation}
+\vspace{-1mm}
+
+CPNS is used to receive measurements from sensor nodes, estimate system states, and send commands to the actuators to control the operation of physical systems. Each physical component or system is measured by multiple sensing nodes to increase resilience to faults and the nodes that measure the same component are organized as a cluster. A number of nodes in the cluster collect measurements and send data to the controller via multiple hops. To simplify our analysis, we assume only one controller in the system. Nodes may be mobile and nodes within the same cluster are relatively static to each other.
+
+There are two types of nodes in the system: sensing nodes and
+forwarding nodes and these two types of nodes are denoted as sensor
+nodes in the paper, represented as green nodes and blue nodes
+in Fig.~\ref{models}, respectively. The sensing node can not only
+sense and form the measurement reports of the monitored components,
+but also forward the measurement reports of other nodes. The
+forwarding node can only forward the measurement reports to the
+controller. We assume that each cluster has a unique cluster ID and
+each node has a unique node ID. Sensor nodes that measure or forward
+measurement reports have a limited computation and communication
+capability and limited energy resources. Sensor nodes lack
+tamper-resistance hardware and can be compromised by attackers.
+Fig.~\ref{models} shows the example of system model, where node
+$v_1, v_2, v_3$ and $v_4$ obtain the measurement reports of
+monitored component $j$ and send them to the controller via $v_4$.
+Similarly, $u_4$ sends the measurement report of monitored component
+$i$ to the controller through multiple forwarding nodes. We can see
+that $v_1$ can serve as a forwarding node to transmit the
+measurement reports of monitored component $i$.
+
+\begin{figure}[!t]
+\centering \epsfig{file=f2-new.eps, width=2.2in} \vspace{-4mm}
+\caption{System Model}\label{models} \vspace{-4mm}
+\end{figure}
+
+We assume that the attacker can compromise sensor nodes, including both the sensing nodes and forwarding nodes. Once a node is compromised, the secret information stored in the node becomes visible to the attacker. The attacker can inject false measurement reports to the controller via the compromised nodes. %This causes the controller to estimate wrong system states \cite{YL09} and send wrong control commands to the actuators, posing the dangerous threats to the system.
+The false reports also consume lots of network and computation
+resources and shorten the lifetime of CPNS.
+We assume that the controller is well protected and the attacker
+could only obtain the authentication information through
+compromising sensor nodes. We also assume that there is a reliable
+node initialization after nodes being deployed, and the attacker
+cannot compromise or damage any node during the initialization
+phase.
+
+\begin{table}
+\centering \caption{Notation}\label{Notation}\vspace{-3mm}
+\fontsize{7.5pt}{\baselineskip}\selectfont
+\begin{tabular}{lp{0.35\textwidth}} \hline
+$N_s:$& Total number of sensing nodes in the system.\\
+$N_f:$& Total number of forwarding nodes in the system.\\
+$n:$& The number of nodes used to measure a monitored component, i.e., the number of nodes in a cluster.\\
+$T:$& The number of nodes used to endorse a measurement report.\\
+$C_i:$ & Cluster ID.\\
+$u,v,w:$& Node ID.\\
+$CH_i:$& Cluster-head of cluster $C_i$.\\
+$c_i^j:$& Local ID of node in cluster $C_i$,$1\leq j \leq n$.\\
+$MAP:$& Message authentication polynomial.\\
+$l:$& Number of primitive polynomials in the globe primitive polynomial pool.\\
+$f_i(x,y,z):$& Primitive polynomial of cluster $C_i$ with parameter $x, y$ and $z$.\\
+$auth_i^u:$& Authentication polynomial of cluster $C_i$ stored in node $u$ with parameter $y$ and $z$. \\
+$verf_i^v:$& Check polynomial of cluster $C_i$ stored in node $v$ with parameter $x$ and $z$. \\
+$R_t:$& Communication radius of sensor nodes. \\
+$E:$& Measurement from sensor nodes.\\
+$r:$& Sensing report generated by sensing node. \\
+$R:$& Integrated measurement report merged by a number of sensing report $r$ and sent to the controller by the cluster-head.\\
+$H(\cdot):$& Hash function stored in each node.\\
+$Time:$& Timestamp of measurement report.\\
+$K:$& Master key used to establish the key shared between neighboring nodes.\\
+$K_C:$& Master key used to establish the cluster key.\\
+$E:$ & Measurements of monitored component measured by sensing nodes. \\
+\hline
+\end{tabular}
+\vspace{-4mm}
+\end{table}
+
+\vspace{-2mm}
+\section{Our Approach}\label{sec:our scheme}
+
+\vspace{-1mm}
+\subsection{Basic Idea}
+\vspace{-1mm}
+
+The basic idea of our scheme is described below. PCREF uses
+polynomials instead of MACs to verify reports, and can mitigate the
+node impersonating attack against legitimate nodes. By organizing a
+set of sensing nodes into a cluster, where nodes are responsible for
+the same monitored components, PCREF assigns the corresponding
+authentication polynomial and check polynomial to each sensor node.
+These polynomials stored in nodes are bundled with node ID and
+derived by the primitive polynomials assigned from a primitive
+polynomial pool. Different primitive polynomials will be used in
+different clusters through the cluster-based primitive polynomial
+assignment. This increases the resilience of our scheme to the
+increasing number of compromised nodes without relying on the node
+localization and static data dissemination routes. The
+authentication polynomial stored in each node is used to endorse the
+report of local component measurement while the check polynomial is
+used to validate the received reports. Each sensing node stores the
+authentication polynomial of the local cluster and stores the check
+polynomial of other clusters with a pre-defined probability $P$.
+Each forwarding node stores the check polynomial of each cluster
+with the same probability $P$. Our scheme also uses
+$T$-authentication framework similar to
+\cite{SEF,LBRS,GRSEF,LEDS,CCEF,DEFS,IHA}, i.e., a legitimate report
+shall be authenticated by $T$ nodes from the same cluster.
+Forwarding node could verify the report only if it shares the
+authentication information with the source node.
+
+Our scheme consists of the following two key components: (i) {\em
+authentication information management} is used to assign the key,
+authentication polynomial, check polynomial, and local ID of sensing
+nodes, and (ii) {\em data security management} is used to detect and
+filter the false measurement reports. The detailed description
+of these two components will be described in the next two
+subsections. The notations used in this paper are shown in Table~\ref{Notation}.
+
+\vspace{-1mm}
+\subsection{Authentication Information Management}
+\vspace{-1mm}
+
+Before the sensor nodes are deployed, we first need to determine the
+number of sensing nodes, say $n$, for each monitored component and
+the total number of sensing nodes in the system, say $N_s$. We then
+determine the number of forwarding nodes, say $N_f$, based on the
+node communication radius, say $R_t$, and the size of the network.
+After that, we choose the threshold $T(T<n)$ to determine the number
+of MAP needed in a legitimate measurement report. The selection of
+$T$ must balance the security and communication overhead. We also
+need to prepare a master key and a global primitive polynomial
+pool. The master key is used to produce the cluster key for each
+cluster. The global primitive polynomial pool is used to assign the
+primitive polynomial to each cluster and its size is $l(l<N_s/n)$.
+Finally, there is a hash function $H(\cdot)$ in our scheme, and its
+domain and range are the set of encrypted measurements of components
+reported by sensing nodes and the set of positive integers,
+respectively.
+
+In our scheme, we assume that the node initialization phase is
+reliable and secure, and the attacker cannot compromise and launch
+attacks at any node during this phase. The node initialization of
+PCREF consists of four steps, including: {\em cluster organization},
+{\em authentication information assignment}, {\em key generation},
+and {\em local ID assignment}, which will be described below.
+
+\subsubsection{Step 1: Cluster organization}
+
+In our scheme, each monitored component is monitored by $n$ sensing
+nodes organized as a cluster. We can deploy $n$ sensing nodes close
+to the monitored component. Those nodes communicate with each other
+and each node stores the node IDs of its neighbors to organize the
+cluster. The node ID is stored in the node before being deployed. We
+assign the cluster ID to each cluster and each sensing node
+stores its cluster ID, e.g., each sensing node in cluster $i$
+stores the cluster ID $C_i$ in its memory.
+
+\subsubsection{Step 2: Authentication information assignment}
+
+In this stage, the network designer  initializes all nodes and the
+network with the following parameters:
+$\{K_C,f(x,y,z),T,H(\cdot)\}$,
+%\begin{align}
+%\{K,K_C,f(x,y,z),T,H(\cdot)\},
+%\end{align}
+where $K_C$ are the master keys, $f(x,y,z)$ is the element from a
+set of primitive polynomials, $T$ is the threshold, and $H(\cdot)$
+is the hash function. For each sensing node $u$, the designer stores
+the master $K_C$ and the hash function $H(\cdot)$ in $u$. He also
+reads the cluster ID $C_i$ stored in the node, and computes the
+authentication polynomial of cluster $C_i$ for $u$ by
+\begin{equation}\label{auth}
+ auth_i^u(y,z)=\alpha f_i(u,y,z),
+\end{equation}
+where $x, y, z$ are parameters, $u$ is the sensing node in cluster $C_i$, $f_i(x,y,z)$ is the primitive polynomial of
+cluster $C_i$, $auth_i^u(y,z)$ is the authentication polynomial of cluster $C_i$ for $u$, and $\alpha \in\{2,2^2, 2^3,2^4\}$. Note that the designer randomly chooses the value of $\alpha$ while computing the authentication polynomial. Thus, no other party knows the value of $\alpha$ except the designer. The usage of $\alpha$ is to increase the resilience of our scheme to the number of compromised nodes. After the computation, the $auth_i^u(y,z)$ is stored in node $u$. The designer then computes the check polynomials for node $u$. For each cluster $j (j\neq i)$, the designer computes the check polynomial $verf_j^u(x,z)$ with a probability $P$, and stores these check polynomials in node $u$ by
+\begin{equation}\label{verf}
+    verf_j^u(x,z)=\beta f_j(x,u,z),
+\end{equation}
+where $verf_j^u(x,z)$ is the check polynomial of cluster $C_j$
+stored in node $u,\beta \in\{2^5,2^6,2^7,2^8\}$ and it plays the
+same role as $\alpha$. In fact, $\beta$ can be any value of $2^t$,
+where $t$ is a positive integer. To make a reasonable memory storage
+for sensor node, we set its range as $\{2^5,2^6, 2^7,2^8\}$. For
+each forwarding node $w$, the designer computes the check
+polynomials of all the clusters with probability $P$ and stores hash
+function $H(\cdot)$, and the check polynomials in node $w$.
+
+Note that in this stage, we use the cluster-based primitive polynomial assignment mechanism to ensure that the primitive polynomial assigned for one cluster is different from others. The use of the ID-based polynomial generation ensures that the authentication polynomial and the check polynomial stored in one node are different from other nodes. Our scheme leads to a high resilience to node impersonation attacks because the authentication information of one cluster has no impact on another cluster. The formation of authentication information in our scheme does not require node localization, which is required by \cite{LBRS,GRSEF,LEDS,CCEF}. %Our scheme avoids the threats during node localization %and can deal with the scenarios for CPS where sensors are mobile as well.
+
+\subsubsection{Step 3: Key generation}
+
+In this stage, by using the master key $K_C$, each sensing node
+generates the
+cluster key. Using Fig.\ref{models} as an example, the cluster key of cluster $C_i$ stored in $u_1$ is %$K_{C_i}=F_C(K_C|CH_i)$%, that is
+\begin{align}\label{clusterkey}
+K_{C_i}=F_C(K_C|CH_i),
+\end{align}
+where $|$ is denoted as the connection operation, $F_C(\cdot)$ is
+the cluster key generation function. Notice that $K_C$ is erased once
+generation is completed. With the assumption that attackers cannot
+compromise node during initialization-phase, no one knows $K_C$ even
+if attackers compromise nodes in filtering-phase. Hence, $K_C$ and
+$K_{C_i}$ are not globally known because $K_{C_i}$ is generated by
+$K_C$, and the nodes outside cluster cannot decrypt $E$ from
+report.
+
+\subsubsection{Step 4: Local ID assignment}
+
+In this stage, each sensing node is assigned a local ID by its
+cluster-head. Cluster-head $CH_i$ sends the local ID assignment
+message to every nodes $u$ in its cluster,
+\begin{align}
+CH_i\longrightarrow u:(CH_i|u|c_i^j),
+\end{align}
+where $|$ is denoted as the connection operation, $c_i^j$ is the
+local ID of $u$ assigned by $CH_i$. After receiving the message,
+node $u$ stores the local ID and sends the following response
+message,
+\begin{align}
+u\longrightarrow CH_i: (u|c_i^j).
+\end{align}
+The cluster-head collects all response messages and determines whether the $n$ local IDs are assigned to the different cluster nodes. Note that $n$ is the number of sensing nodes monitoring the physical component. If the cluster-head finds a local ID not being assigned, it repeats the above process and assigns it to a node. By using the local ID assignment, the cluster-head assigns the local ID to all nodes in the cluster and ensures that for any $j(j\in[1,n])$, there is a $c_i^j$ stored in one and only one cluster node. With the use of the local ID, our scheme can detect the false measurement reports sent by the compromised cluster-head and increase the resilience to false data injection attacks.
+
+After completing the four steps described above, the authentication information assignment is complete and the corresponding authentication information is stored in all sensor nodes. The authentication information plays a critical role in the data security management to detect and filter the false measurement reports, which will be discussed next.
+
+\vspace{-1mm}
+\subsection{Data Security Management}
+\vspace{-2mm}
+
+The data security management of PCREF consists of the {\em sensing
+report generation}, {\em measurement report generation and
+transmission}, {\em en-route filtering}, and {\em controller
+authentication}. We will describe those steps below.
+
+\subsubsection{Step 1: Sensing report generation}
+
+Each sensing node measures the data of the monitored component and
+generates the sensing report $r$, which consists of the encrypted
+measurement, node ID, local ID, and MAP. Sensing nodes generate
+different MAPs for the same measurement using its node ID and
+locally stored authentication polynomial. For example, node $u$
+first calculates
+\begin{equation}\label{z}
+z= H((E)_{K_{C_i}}),
+\end{equation}
+where $E$ is the measurements of its monitored component, $H(\cdot)$
+is the hash function stored in node $u$ and $K_{C_i}$ is the cluster
+key for the cluster, to which $u$ belongs, and then node $u$
+generates MAP for the measurement by
+%$MAP=auth_i^u(y,z)=\alpha f_i(u,y,z)=\alpha f_i(u,y,H((E)_{K_{C_i}}))$,
+\begin{align}\label{MAP}
+    MAP&=auth_i^u(y,z)=\alpha f_i(u,y,H((E)_{K_{C_i}})),
+\end{align}
+where $auth_i^u(y,z)$ is the authentication polynomial stored in
+node $u$. As we can see, the MAP is a polynomial, which has only one
+parameter $y$ and is bundled with node ID. After combining with the
+check polynomial stored in the intermediate nodes along the route,
+MAP can be used to detect the correctness of forwarded measurement
+reports. To reduce the communication overhead of forwarding the
+measurement reports, PCREF only adds the coefficients of each MAP
+into report.
+
+After generating the sensing report $r$, every sensing node sends
+the report to the cluster-head $CH_i$. The report $r$ is constructed
+by
+\begin{align}
+r=\left((E)_{K_{C_i}}|u|c_i^j|MAP\right),
+\end{align}
+where $|$ is denoted as the connect operation, $u$ is node ID,
+$c_i^j$ is local ID of $u$ and MAP is the authentication information
+of measurements $E$ generated by node $u$ and can be derived from
+Equation~(\ref{MAP}). The measurements $E$ is encrypted through the
+cluster key $K_{C_i}$, and thus any node outside the cluster cannot
+decrypt $E$ from the report.
+
+\subsubsection{Step 2: Measurement report generation and transmission}
+
+After receiving all sensing reports generated by the sensing nodes,
+cluster-head randomly chooses $T$ reports from them and merges these
+$T$ measurement reports to an integrated measurement report $R$ and
+sends it to controller. The measurement report $R$ is formed by,
+\begin{align}
+R&=\left((E)_{K_{C_i}}|C_i|u_1|\cdots|u_T|c_i^{j_1}|\cdots|c_i^{j_T}\right.\nonumber\\
+&\left.|auth_i^{u_1}(y,H((E)_{K_{C_i}}))|\cdots|auth_i^{u_T}(y,H((E)_{K_{C_i}}))|Time\right),
+\end{align}
+where $C_i$ is the cluster ID, $auth_i^{u_m}(y,H((E)_{K_{C_i}}))$ is
+denoted as MAP generated by node $u_m$, $Time$ is the timestamp, and
+other notations are the same as ones in $r$.
+
+After generating $R$, cluster-head sends it to the controller
+through the intermediate nodes along the route. Because of the
+broadcast nature of wireless communication, the sensing nodes in the
+same cluster also eavesdrop the measurement report sent by
+cluster-head and determine that (i) $T$ local IDs included in $R$
+satisfies $c_i^{j_1}\neq  c_i^{j_2}\neq\cdots\neq c_i^{j_T}$ and
+$1\leq c_i^{j_1},c_i^{j_2},\cdots,c_i^{j_T}\leq n$, where $n$ is the
+number of sensing nodes for monitoring the component; and (ii) the
+information attached in $R$ is the same as ones stored in each
+sensing node with local ID $c_i^{j_m}$. If the above two conditions
+are not satisfied, sensing nodes will send the warning massage to
+the first intermediate node and request it to drop report $R$.
+Otherwise, no warning message will be sent and this means that $R$
+is the true integrated measurement report of the monitored
+component. In this way, PCREF can drop the false measurement report
+forged by the compromised cluster-head effectively at the first
+intermediate node along the forwarding route. The process of the
+measurement report delivery is shown %in Algorithm 1 %~\ref{Sending}
+in Appendix A of our technical report \cite{PolyReport2011}.
+
+Note that the cluster-head and ordinary sensing node can also serve
+as the forwarding nodes. If the attacker compromises the ordinary
+sensing node or cluster-head, he can forge and send the false
+measurement reports of other components to the controller via the
+compromised nodes. Then the above approach cannot detect and filter
+this false report. To deal with this issue, PCREF adopts the
+en-route filtering mechanism described in the next step.
+
+\subsubsection{Step 3: En-route filtering}
+
+By leveraging the polynomial-based message authentication introduced
+in \cite{CRMA}, PCREF conducts the en-route filtering on false
+measurement reported from the compromised nodes while the existing
+approaches \cite{CRMA} cannot do so. In PCREF, the measurement
+report is transmitted to the controller hop-by-hop. The intermediate
+node, which does not have the corresponding check polynomial of the
+cluster, where the measurement is originally generated (e.g.,
+cluster ID is attached in the report), forwards the measurement
+report to the next node along the route. The intermediate node,
+which has corresponding check polynomial, determines whether the
+received measurement report $R$ is false through validating the
+following conditions: (i) \emph{Condition 1}: the timestamp $Time$
+attached in $R$ is fresh. (ii) \emph{Condition 2}: $T$ MAPs attached
+in the report are different and are generated by the sensing nodes
+in the corresponding cluster, where cluster ID is claimed in the
+report. (iii) \emph{Condition 3}: $T$ MAPs can be verified by the
+corresponding check polynomial stored in the intermediate node.
+%\begin{itemize}
+%  \item \emph{Condition 1}: the timestamp $Time$ attached in $R$ is fresh.
+%  \item \emph{Condition 2}: $T$ MAPs attached in the report are different and are generated by the sensing nodes in the %corresponding cluster, where cluster ID is claimed in the report.
+%  \item \emph{Condition 3}: $T$ MAPs can be verified by the corresponding check polynomial stored in the intermediate %node.
+%\end{itemize}
+
+If the above three conditions are not satisfied, the intermediate
+node will drop the measurements report. Otherwise, the measurement
+report will be forwarded. The \emph{Condition 1} uses the timestamp
+$Time$ to detect the replayed false report. To verify the
+\emph{Condition 2} and \emph{Condition 3}, the intermediate node
+first calculates calculates the values of $A_i^{u_m,v}$ and
+$V_i^{v,u_m}$ with the value of $z$ calculated by
+Equation~(\ref{z}),
+\begin{align}
+A_i^{u_m,v}&=auth_i^{u_m}(v,H\left((E)_{K_{C_i}}\right)), \nonumber \\
+&=\alpha f_i(u_m,v,H\left((E)_{K_{C_i}}\right)),\label{A} \\
+V_i^{v,u_m}&=verf_i^v(u_m,z)=\beta f_i(u_m,v,z), \nonumber \\
+&=\beta f_i(u_m,v,H\left((E)_{K_{C_i}}\right)), \label{V}
+\end{align}
+where $v$ is the node ID of the intermediate node, $u_m$ is the
+sensing node ID carried in the report,
+$auth_i^{u_m}(y,H\left((E)_{K_{C_i}}\right))$ is the MAP generated
+by $u_m$ and in the report, $verf_i^v(x,z)$ is the check polynomial
+of cluster $C_i$ stored at node $v$. As we can see from
+Equation~(\ref{A}) and~(\ref{V}), $q= V_i^{v,u_m}/ A_i^{u_m,v}=
+\beta/\alpha$, and only if $q$ belongs to \{$2^1,2^2,\cdots,2^7$\},
+the MAP generated by node $u_m$ can be determined as valid one. The
+reason is that $\alpha$ belongs to $\{2,2^2,2^3,2^4\}$, and $\beta$
+belongs to $\{2^5,2^6,2^7,2^8\}$. Note that, this approach could
+lead to the negative rate with $1/(2^{l-3})^T$ for the forwarded
+false measurement report, where $l$ is the number of median
+coefficients of each MAP. However, according to the security
+analysis of PCREF described in Appendix C shown in our technical
+report \cite{PolyReport2011}, the successful rate of forging MAPs is
+very small and can be generally ignored, when no knowledge of
+authentication information is revealed to the attacker.
+
+The intermediate node verifies all MAPs in the report via the same
+check polynomial, which ensures that $T$ MAPs are derived by the
+same primitive polynomial. Through the cluster-based
+primitive polynomial assignment, PCREF ensures that only the sensing
+nodes in the same cluster have the same primitive polynomial. By
+using the same check polynomial, the \emph{Condition 2} can be
+satisfied; Meanwhile, the \emph{Condition 3} can be satisfied only
+if all MAPs carried in the report are valid. If all three
+conditions are satisfied, the intermediate node forwards the
+measurement report. Otherwise, the measurement report will be
+filtered.
+
+The detailed process of en-route filtering is shown in
+%Algorithm 2 %~\ref{Filtering}
+in Appendix A of our technical report \cite{PolyReport2011}. The
+cluster-based primitive polynomial assignment provides the different
+primitive polynomials to each cluster, and the authentication
+polynomial stored in the node is bundled with node ID. Hence, the
+attacker could not obtain the authentication polynomial stored in a
+legitimate sensing node in one cluster by compromising the node in
+another cluster. Hence, PCREF has the resiliency condition: the
+attacker can successfully forge the false measurement report and
+send it to controller without being filtered by intermediate nodes
+only if he compromises more than $T$ sensing nodes for the same
+component. Obviously, satisfying the resiliency condition makes
+PCREF solve the $T$-threshold problem appeared in \cite{SEF,IHA} and
+achieves a high resilience against the number of compromised nodes.
+In addition, PCREF does not require the node localization and node
+association, which are required by LBRS and LEDS to select
+intermediate nodes and establish the authentication key for them to
+verify the measurement reports. Hence, PCREF has unique benefits in
+comparison with the existing schemes.
+
+\subsubsection{Controller authentication}
+
+After receiving the measurement report, the controller validates it
+in the same way as the intermediate node does. Because the
+controller stores all primitive polynomials, it can validate all
+received measurement reports and filter the false measurement
+reports, which bypass the detection of intermediate nodes. If the
+report is confirmed as a legitimate one, the controller decrypts the
+measurements from the report, and estimates the state of monitored
+component and sends the commands to the actuators to
+control the operation of physical systems. Because of having the
+complete authentication information, the controller is the last
+defense in the system and can detect and filter all the false
+measurement reports forged by the attacker.
+
+\vspace{-2mm}
+\section{Security Analysis}\label{sec:security}
+\vspace{-1mm}
+
+We now analyze the security of our proposed scheme to authenticate
+the measurement reports. The performance metrics include (i) {\em
+filtering efficiency} is defined as the probability of false data to
+be filtered out within a number of hops, (ii) {\em attack
+resilience} is defined as the ratio of compromised components
+(clusters) vs. the total components (clusters) in the system, and
+(iii) {\em filtering capability} is defined as the average forwarded
+hops of false measurement reports, i.e., the average hops that the
+false measurement report will be forwarded before being detected and
+filtered. The overhead analysis of PCREF in terms of storage and
+energy cost can be found in Appendix A and the analytical data is shown in Fig.~5. %of our technical report
+%\cite{PolyReport2011}.
+Note that, with no knowledge of authentication information revealing
+to the attacker, the probability of the MAP of measurement to be
+successfully forged by the attacker can be largely ignored. The
+detailed proof can be found in Appendix C of our technical report
+\cite{PolyReport2011}.
+
+\vspace{-2mm}
+\subsection{Filtering Efficiency}
+\vspace{-1mm}
+
+%PCREF requires that each legitimate measurement report attaches $T$ valid MAPs. When the attacker compromises $x(x<T)$ sensing nodes in the cluster and obtains $x$ authentication polynomials to derive $x$ valid MAPs, he has to attach other forged $T-x$ MAPs in the forged report in order to successfully send the forged measurement to the controller.
+
+In PCREF, each intermediate node stores the check polynomial for a
+cluster with the predefined probability $P$. After receiving the
+measurement report, the intermediate node verifies all $T$ MAPs
+carried in the report to detect and filter out the false measurement
+reports. Hence, when $x<T$, the probability of a false measurement
+report filtered by the intermediate node is $P_f=P$, where the $x$
+is the number of compromised nodes in the cluster. Let the
+probability of a false measurement report filtered after being
+forwarded $h$ hops be $P_h$ and the probability of a false
+measurement report filtered within $h$ be $P'_h$. We have
+%$P_h=(1-p_f)^{h-1}\cdot P_f$ and $P'_h=1-(1-P_f)^h$.
+$P_h=(1-P_f)^{h-1}\cdot P_f$ and $P'_h=1-(1-P_f)^h$.
+%\begin{align}
+%  P_h&=(1-p_f)^{h-1}\cdot P_f,\\
+%  P'_h&=1-(1-P_f)^h.
+%\end{align}
+The filtering efficiency of PCREF can be represented by $P'_h$
+defined as the probability of false measurement report to be
+filtered within a number of hops. Obviously, the greater the
+probability, the better the filtering efficiency becomes. Numerical
+data in Fig.\ref{efficiencyvshops} show the filtering efficiency vs.
+the forwarded hops when $P = 0.1, 0.2, 0.5$. As we can see, PCREF
+can filter the most of false measurement reports en-route, and thus
+it can detect and filter false measurement reports effectively. The
+higher the value of $P$, the smaller the forwarded hops is required
+to filter the false measurement reports. The reason is that the
+probability of the check polynomial stored at the intermediate node
+increases as $P$ increases. However, each intermediate node stores
+$(Ns/n)\cdot P$ check polynomials, and the smaller $P$ can reduce
+the storage overhead of the intermediate node.
+
+\vspace{-2mm}
+\subsection{Resilience to Attack}
+\vspace{-1mm}
+%We now analyze the resilience of PCREF to the number of compromised
+%nodes.
+Because of the derivation from different primitive polynomials
+bundled with node ID, the authentication polynomial in compromised
+node could not be used to launch the node impersonating attack
+against the legitimate node. According to the filtering rules of
+PCREF, the measurement report is false if more than one MAP carried
+in the report is not derived from the primitive polynomial assigned
+to the cluster, where the report generates. Hence, to forge a
+``legitimate" false measurement report, the attacker shall
+compromise several sensing nodes and obtain $T$ or more
+authentication polynomials of the attached cluster. In PCREF, to
+obtain $T$ authentication polynomial of the target cluster, the
+attacker shall consider the cases listed below and our analysis will
+be based on these two cases: (i) \emph{Case 1}: Use the check
+polynomial and authentication polynomial stored in compromised
+sensing nodes and forwarding nodes to derive the primitive
+polynomial of the target cluster and derive enough valid
+authentication polynomials via the derived primitive polynomial.
+(ii) \emph{Case 2}: Compromise $T$ or more sensing nodes in the
+target cluster and obtain authentication polynomials stored in them.
+%\begin{itemize}
+%  \item \emph{Case 1}: Use the check polynomial and authentication polynomial stored in compromised sensing nodes and forwarding nodes to derive the primitive polynomial of the target cluster and derive enough valid authentication polynomials via the derived primitive polynomial.
+%  \item \emph{Case 2}: Compromise more than $T$ sensing nodes in the target cluster and obtain authentication %polynomials stored in them.
+%\end{itemize}
+
+\textbf{The resilience of PCREF in Case 1.} In PCREF, each cluster is
+assigned a primitive polynomial and sensing nodes in this cluster
+generate the authentication polynomial and intermediate nodes
+generate the check polynomial associated with this cluster by the
+primitive polynomial. Hence, the attacker can derive the desired
+authentication polynomials if he obtains the primitive polynomial
+assigned to the targeted cluster. Nevertheless, in PCREF,
+because no one knows the primitive polynomials except the
+controller, the attacker could not obtain the primitive
+polynomial of the target cluster directly. We now analyze the
+possibility that the attacker derives the primitive polynomial of
+the target cluster through the authentication polynomials and check
+polynomials stored at the compromised nodes.
+
+We assume that the targeted cluster is cluster $C_i$, its primitive
+polynomial is $f_i(x,y,z)$, and the highest power of parameters
+$x,y,z$ are $n_x,n_y,n_z$, respectively. Hence, $f_i(x,y,z)$ can be
+represent by,
+\begin{align}
+f_i(x,y,z)=\sum\limits_{l=0}^{n_x}\sum\limits_{m=0}^{n_y}\sum\limits_{s=0}^{n_z}C_{lms}^ix^ly^mz^s,
+\end{align}
+where $C_{lms}^i$ is the coefficient and the number is
+$(n_x+1)\cdot(n_y+1)\cdot(n_z+1)$. Hence, the authentication
+polynomial of cluster $C_i$ stored in the sensing node $u$ and the
+check polynomial of cluster $C_i$ stored in intermediate node $v$
+can be represented by
+\begin{equation}
+  auth^u_i(y,z)=\alpha\sum\limits_{l=0}^{n_x}\sum\limits_{m=0}^{n_y}\sum\limits_{s=0}^{n_z}C_{lms}^iu^ly^mz^s=\sum\limits_{m=0}^{n_y}\sum\limits_{s=0}^{n_z}D_{ms}^iy^mz^s,
+  \label{auth(y,z)}
+\end{equation}
+\begin{equation}
+  verf^v_i(x,z)=\beta\sum\limits_{l=0}^{n_x}\sum\limits_{m=0}^{n_y}\sum\limits_{s=0}^{n_z}C_{lms}^ix^lv^mz^s=\sum\limits_{l=0}^{n_x}\sum\limits_{s=0}^{n_z}G_{ls}^iu^lz^s,
+  \label{verf(x,z)}
+\end{equation}
+where $u$ is the sensing node in cluster $C_i$ and $v$ is the
+intermediate node outside cluster $C_i$, $D^i_{ms}$ and $G^i_{ls}$
+are coefficients and can be fixed if the attacker compromises
+node $u$ and $v$. For any value $z_0$ of $z$, the attacker derives
+the above equations by $(x, y, z)=(u, v, z_0)$.
+\begin{align}
+\alpha\sum\limits_{l=0}^{n_x}\sum\limits_{m=0}^{n_y}\sum\limits_{s=0}^{n_z}C_{lms}^iu^lv^mz_0^s=&\sum\limits_{m=0}^{n_y}\sum\limits_{s=0}^{n_z}D_{ms}^iv^mz_0^s,
+  \label{auth(v,z0)}\\
+\beta\sum\limits_{l=0}^{n_x}\sum\limits_{m=0}^{n_y}\sum\limits_{s=0}^{n_z}C_{lms}^iu^lv^mz_0^s=&\sum\limits_{l=0}^{n_x}\sum\limits_{s=0}^{n_z}G_{ls}^iu^lz_0^s.
+\label{verf(x,z0)}
+\end{align}
+
+Equation~(\ref{auth(v,z0)}) is derived by the authentication
+polynomial and with ($n_x$+2) unknown parameters in it (i.e.,
+$n_x$+1 parameters regarding to the coefficients of $x$ in $f_i(x,
+y,z)$ and one parameter $\alpha$), while Equation~(\ref{verf(x,z0)})
+is derived by the check polynomial and with ($n_y$+2) unknown
+parameters in it (i.e., $n_y$+1 parameters regarding to coefficients
+of $y$ in $f_i(x,y,z)$ and one parameter $\beta$). Only if $n_x$+2
+or $n_y$+2 unknown parameters in Equation~(\ref{auth(v,z0)}) or
+(\ref{verf(x,z0)}) are obtained, the attacker can derive the
+primitive polynomial of the target cluster. As we can see, because
+the Equation~(\ref{auth(v,z0)}) has different unknown parameters
+from Equation~(\ref{verf(x,z0)}), they cannot be combined to derive
+the primitive polynomial. If the attacker compromises $N_c$ nodes
+and obtains $t_s$ authentication polynomials and $t_f$ check
+polynomials of the cluster to be attacked, he can generate $t_s$
+Equation~(\ref{auth(v,z0)}) and $t_f$ Equation~(\ref{verf(x,z0)}).
+However, from the attacker's viewpoint, $t_s$
+Equation~(\ref{auth(v,z0)}) have $n_x+1$ unknown coefficients of $x$
+in $f_i(x, y, z)$ and $t_s$ unknown $\alpha$s as different
+authentication polynomial has different $\alpha$. Hence, these $t_s$
+equations have ($t_s$+$n_x$+1) unknown parameters, and the number of
+unknown parameters increases as the number of equations increases
+and it always has $ts <$($t_s$+$n_x$+1). According to the
+calculus, we know that the attacker cannot derive all unknown
+parameters in Equation~(\ref{auth(v,z0)}) and then obtain the
+desired primitive polynomial. Because of the similar reasons, the
+attacker cannot derive the desired primitive polynomial from $t_f$
+from Equation~(\ref{verf(x,z0)}) as well.
+
+According to the analysis above, it is difficult for the attacker to derive the desired primitive polynomial from the obtained authentication polynomials and check polynomials. Hence, only if the attacker compromises $T$ sensing nodes in the attacked cluster, he can successfully forge the false measurement report of the targeted component.
+
+\textbf{The resilience of PCREF in Case 2}. When $N_{cs}$ sensing
+nodes are compromised by the attacker, the probability of a cluster
+with $x$ compromised sensing nodes becomes
+%$P_{\{x\}}=\left(\begin{array}{c}n\\x\end{array}\right)\left(\begin{array}{c}N_s-n\\N_{cs}-x\end{array}\right)/\left(\begin{array}{c}N_s\\N_{cs}\end{array}\right)$,
+\begin{align}
+P_{\{x\}}=\frac{\left(\begin{array}{c}n\\x\end{array}\right)\left(\begin{array}{c}N_s-n\\N_{cs}-x\end{array}\right)}{\left(\begin{array}{c}N_s\\N_{cs}\end{array}\right)},
+\end{align}
+where $N_s$ is the total number of sensing nodes, and $n$ is the
+number of sensing nodes monitoring a given component in the cluster.
+The probability of a cluster having $T$ or more compromised sensing
+nodes, namely the compromised cluster, can be represented by
+%$P_{ca}=\sum\limits_{x=T}^nP_{\{x\}}=\sum\limits_{x=T}^n\left(\begin{array}{c}n\\x\end{array}\right)\left(\begin{array}{c}N_s-n\\N_{cs}-x\end{array}\right)/\left(\begin{array}{c}N_s\\N_{cs}\end{array}\right)$.
+\begin{align}
+P_{ca}=\sum\limits_{x=T}^nP_{\{x\}}=\sum\limits_{x=T}^n\frac{\left(\begin{array}{c}n\\x\end{array}\right)\left(\begin{array}{c}N_s-n\\N_{cs}-x\end{array}\right)}{\left(\begin{array}{c}N_s\\N_{cs}\end{array}\right)}.
+\end{align}
+Note that $P_{ca}$ is also defined as the compromised clusters (i.e., compromised components) ratio over the network, that is, the ratio of monitored components where the corresponding measurement reports authenticity will be manipulated by the attacker by compromising $N_{cs}$ sensing nodes. %Obviously, if the compromised area ratio increases slowly as the number of compromised nodes increases, we can determine that the filtering scheme has good resilience to the growing number of compromised nodes.
+Fig.~\ref{rate} shows the ratio of compromised clusters vs. the
+number of compromised sensing nodes, where there are $10000$ nodes
+in the system. As we can see, greater threshold $T$, the lower the
+rate of compromised cluster. When $T$ is $5$, the ratio of
+compromised clusters approaches to a low value even though a large
+number of sensing nodes are compromised. Hence, PCREF achieves a
+high resilience to the increased number of compromised nodes.
+
+Notice that our approach achieves a higher resilience to the attacks against perturbation-polynomials-based schemes discussed in \cite{Janathan09}. First, we divide the nodes into clusters, and different clusters are assigned with different primitive-polynomials. A node stores multiple bivariate-polynomials derived from different primitive-polynomials. To derive a target-cluster's primitive-polynomial, attackers have to compromise enough nodes, which store bivariate-polynomial derived from target-cluster's primitive-polynomial. Because node stores target-cluster's bivariate-polynomial in low probability, attackers need to compromise a large number of nodes with random-capture-attacks. Second, even if attackers compromised enough nodes, it is difficult to derive attacked cluster's primitive-polynomial. We introduce the two parameters $\alpha$ and $\beta$ (unknown to attackers) to increase resilience. Even if attackers know $\alpha$ and $\beta$'s ranges, computation overhead of ciphering them is high and increases as $\alpha$ and $\beta$'s size and polynomial-degree (e.g., if $\alpha$ and $\beta$ are 16-bits, and bivariate-polynomial is degree-3 polynomials, computation-overhead is $\Omega(2^{16*(3+1)})$). Third, even if attackers can derive target cluster's primitive-polynomials, the effect can be limited within the cluster-area without affecting other cluster areas.
+
+\vspace{-2mm}
+\subsection{Filtering Capacity}
+\vspace{-1mm}
+
+We now analyze the filtering capacity of PCREF vs. the number of compromised nodes (including both sensing nodes and forwarding nodes). Recall that to measure the filtering capability, we define the average forwarded hops before the false measurement report being filtered as $\overline{h}$ and we have
+%\begin{equation}\label{averageh}
+   $\overline{h}=E(h)=\sum\limits_{i=1}^{h_{max}}h_iP^c_{h_i}$,
+%\end{equation}
+where $P^c_{h_i}$ is the probability where given a number of compromised nodes in the system, the false measurement report is filtered after being forwarded at least $h_i$ hops. Obviously, the smaller average forwarded hops leads to the greater filtering capacity. We assume that the average forwarded hops from sensors to the controller is $h_{max}$, and the forged measurement reports can be forwarded $h_{max}$ hops and arrives at controller if the cluster, where the measurement report is generated, has more than $T-1$ compromised sensing nodes. When $x (x<T)$ sensing nodes are compromised in the attacked cluster, the attacker should forge $T-x$ MAPs in each forged measurement report.
+
+Recall that these false reports could be filtered by the intermediate nodes, which have the corresponding check polynomial. However, if the attacker compromises the intermediate nodes, these forged reports can escape the filtering and be forwarded to controller. Hence, only if the desired cluster has less than $T$ compromised sensing nodes and at least one intermediate node, which has the check polynomial of desired cluster, is in its routing path and is not compromised, the forged measurement report from the targeted cluster will be filtered. Based on the conditions stated above, we analyze the filtering capacity of PCREF in terms of the number of compromised sensing nodes.
+
+When the attacker compromises $N_c$ sensor nodes, including $N_{cs}$ sensing nodes and $N_{cf}$ forwarding nodes, the probability of cluster with less than $T$ compromised sensing nodes is $\sum\limits_{x=0}^{T-1}P_{\{x\}}$, and the probability that an intermediate node filters the false measurement report is $P_{fc}$. We assume that the probabilities of a node being the sensing node or the forwarding node is $0.5$ and we have
+\begin{align}
+P_{fc}=P\cdot\left(1-\frac{1}{2}\left(\frac{N_{cs}}{N_s}+\frac{N_{cf}}{N_f}\right)\right),
+\end{align}
+where $P$ is the probability of intermediate node with corresponding
+check polynomial, $N_s$ is the number of sensing nodes, and $N_f$ is
+the number of forwarding nodes. Hence, the probability that the
+false measurement report is filtered after forwarding $h_i$ hops is
+denoted as $P^c_{h_i}$ and we have
+\begin{align}
+P^c_{h_i}=\sum\limits_{x=0}^{T-1}P_{\{x\}}\cdot(1-P_{fc})^{h_i-1}\cdot
+P_{fc},
+\end{align}
+where $h_i \in [1, h_{max}-1]$. Recall that there are the following two
+ways for the attacker to successfully inject the false measurement
+reports to the controller: (i) compromising $T$ or more
+sensing nodes within the cluster, and (ii) compromising less than
+$T$ sensing nodes within the cluster and compromising all intermediate
+nodes storing the check polynomial of the target cluster. Hence, the
+probability that the false measurement reports are forwarded
+$h_{max}$ hops becomes
+\begin{align}
+P_{h_{max}}=\sum\limits_{x=T}^nP_{\{x\}}+\sum\limits_{x=0}^{T-1}P_{\{x\}}\cdot\left(1-P_{fc}\right)^{h_{max}-1}.
+\end{align}
+As we can see from the numerical data shown in
+Fig.~\ref{averagehops}, even though a large number of nodes is
+compromised, PCREF can still filter them within a few forwarded
+hops. For example, given a network with 10000 nodes and $P$ is 0.1
+and 0.2, PCREF can filter the false measurement reports within 10
+hops and 7 hops, respectively, even if $20\%$ sensor nodes are
+compromised. Hence, PCREF can filter false reports in small number
+of forwarded hops, and achieves greater filtering capacity, because
+the filtering capacity increases as the average forwarded hops
+decreases.
+
+PCREF also can achieve the goal of saving energy. Fig.~\ref{saving} shows the energy cost vs. the number of
+compromised nodes and the ratio of legitimate reports and false reports with $1000$ monitored components in the system. We can see that, as the number of false data and compromised nodes increase, PCREF can obviously save energy via en-routing filtering false data within few forwarded hops.
+
+\begin{figure*}[htb]
+\begin{minipage}[t]{5.9cm}
+\centering \epsfig{file=f3.eps, width=150pt}
+\vspace{-0.4cm}
+\caption{\label{efficiencyvshops} Filtering efficiency vs. Forwarded hops}\vspace{-0.4cm}
+\end{minipage}
+\begin{minipage}[t]{5.9cm}
+\centering \epsfig{file=f4.eps, width=150pt} \vspace{-0.4cm}
+\caption{\label{rate} Compromised component ratio vs. Number of compromised sensing nodes}\vspace{-0.4cm}
+\end{minipage}
+\begin{minipage}[t]{5.9cm}
+\centering \epsfig{file=f5-new.eps, width=150pt} \vspace{-0.4cm}
+\caption{\label{averagehops} Average forwarded hops vs. Number of compromised nodes}\vspace{-0.4cm}
+\end{minipage}
+\end{figure*}
+
+\begin{figure*}[htb]
+\begin{minipage}[t]{5.9cm}
+\centering \epsfig{file=f6.eps, width=160pt} \vspace{-0.4cm}
+\caption{\label{saving} Energy saving vs. Number of compromised nodes, proportion of legitimate reports and false reports}\vspace{-0.4cm}
+\end{minipage}
+\begin{minipage}[t]{5.9cm}
+ \centering \epsfig{file=f7-x1.eps, width=150pt}
+\vspace{-0.4cm} \caption{\label{Befficiencyvshops} Filtering efficiency vs. Forwarded hops (Analysis)} \vspace{-0.4cm}
+\end{minipage}
+\begin{minipage}[t]{5.9cm}
+ \centering \epsfig{file=f8.eps, width=150pt}
+\vspace{-0.4cm} \caption{\label{simulationFE} Filtering efficiency vs. Forwarded hops (Simulation)} \vspace{-0.4cm}
+\end{minipage}
+\end{figure*}
+
+\begin{figure*}[htb]
+\begin{minipage}[t]{5.9cm}
+\centering \epsfig{file=f9.eps, width=150pt} \vspace{-0.4cm}
+\caption{\label{Baveragehops} Average forwarded hops (analysis)}\vspace{-0.4cm}
+\end{minipage}
+\begin{minipage}[t]{5.9cm}
+ \centering \epsfig{file=f10-new.eps, width=150pt}
+\vspace{-0.4cm} \caption{\label{simulationAFH} Average forwarded hops (simulation)} \vspace{-0.4cm}
+\end{minipage}
+\begin{minipage}[t]{5.9cm}
+\centering \epsfig{file=f11.eps, width=150pt} \vspace{-0.4cm}
+\caption{\label{Brate1} Resilience vs. max number of compromised sensing nodes with 200 (Analysis)} \vspace{-0.4cm}
+\end{minipage}
+\end{figure*}
+
+\vspace{-2mm}
+\section{Performance Evaluation}\label{sec:simulation}
+\vspace{-1mm}
+
+%In this section, we show both the analytical and simulation results of PCREF in comparison with SEF \cite{SEF}, LBRS %\cite{LBRS}, GRSEF \cite{GRSEF} and LEDS \cite{GRSEF} in terms of the filtering efficiency, filtering capability, and %resilience to the number of compromised nodes (e.g., $N_{cs}$ sensing nodes are compromised in the system).
+
+%\subsection{Simulation Setup}
+
+In our evaluation setting, we consider the scenario of $100$
+components and $1000$ sensing nodes (i.e., each component is
+monitored by $10$ sensing nodes). To make the scenario suitable
+for LBRS and LEDS, we consider that components form a
+$10\ast10$ array and are deployed in a $[0,500m]\times[0,500m]$ area
+uniformly, i.e., each component is deployed in a square with side
+length of $50m$. The controller is located at $(0,0)$. The cluster
+used in PCREF, responsible for monitoring the component is similar
+to the cell used in LBRS and LEDS. We also set $T=5$, $n=10$, and
+the node communication radius $R_t=50m$, which are the typical
+values in \cite{SEF,LBRS,LEDS,GRSEF}. For LBRS, the beam width $b$
+is set to $150m$ \cite{LBRS}. For SEF, GRSEF, LBRS and PCREF, the
+key sharing probability or the check polynomial sharing probability
+$q$ is $0.2$. In each simulation, a number of sensing nodes are
+randomly selected as the compromised nodes.
+
+The filtering efficiency is evaluated by the ratio of
+filtered false measurement reports within a forwarded hops.
+Filtering capability is evaluated by the average forwarded hops,
+where the false measurement report is forwarded until being filtered. The resilience
+can be evaluated by the ratio of total compromised components vs.
+the total number of components, that is, the probability of
+components those measurement reports can be successfully forged by
+the attacker. For PCREF, LEDS and LBRS, the ratio of compromised
+components can be obtained based on the definition. For GRSEF, we
+check whether the attacker can forge a valid report from each
+grid-point by dividing the area into virtual grids. The
+resiliency of SEF is evaluated by the times for obtaining
+$T$ keys successfully from distinct partitions by the attacker vs. total number
+of experiments. %\red{Note that, For the MAP forging successful ratio
+%mentioned in section~\ref{sec:security}, it just to prove that the
+%attacker could not forge a legitimate MAP with no knowledge of
+%authentication information revealing to him, could not need to be
+%simulated. Hence, we don't simulate it in this section.}
+
+Numerical results are derived from the formulae in \cite{SEF,LBRS,GRSEF,LEDS} and theoretical analysis in Section~\ref{sec:security}. Each simulation is repeated $100$ times and the simulation result shows the average value over $100$ times. All simulations in this paper are completed by Matlab6.5.
+
+%\subsection{Evaluation Results}
+
+%\subsubsection{Filtering Efficiency}
+
+%Recall that filtering efficiency is defined as the probability of a false measurement report to be filtered in a given %forwarded hops. Obviously, the greater the probability, the better filtering efficiency becomes.
+%{\em Filtering Efficiency.}
+Fig.~\ref{Befficiencyvshops} shows the analytical results of the ratio of filtered false measurement reports vs. the number of forwarded hops of SEF, PCREF, LEDS, GRSEF and LBRS. Fig.~\ref{simulationFE} shows the simulation results of those schemes, when $100$ sensing nodes (i.e., $10\%$ the total number of nodes) are compromised by the attacker. As we can see, both the analytical and simulation results constantly show that PCREF has the highest ratio of filtered false measurement reports and SEF achieves the worst performance. The filtering efficiencies of GRSEF, LBRS, and LEDS are always lower than that of PCREF. %The ratio of PCREF not only achieves the highest one, approaching to '$1$' when the forwarded hop reaches to $20$. Hence, via the polynomial-based authentication, PCREF can effectively defend against the node impersonating attack and achieve the best filtering efficiency in comparison with other schemes when a number of sensing nodes are compromised in the system.
+
+%\vspace{-0.4cm}
+\begin{figure*}[htb]
+\begin{minipage}[t]{5.9cm}
+\centering \epsfig{file=f12-new.eps, width=140pt} \vspace{-0.4cm}
+\caption{\label{simulationR1} Resilience vs. max number of compromised sensing nodes with 200 (Simulation)} \vspace{-0.4cm}
+\end{minipage}
+\begin{minipage}[t]{5.9cm}
+\centering \epsfig{file=f13-new.eps, width=140pt}
+\vspace{-0.4cm} \caption{\label{Brate2} Resilience vs. max number of compromised sensing nodes with 500 (Analysis)} \vspace{-0.4cm}
+\end{minipage}
+\begin{minipage}[t]{5.9cm}
+\centering \epsfig{file=f14-new.eps, width=140pt} \vspace{-0.4cm}
+\caption{\label{simulationR2} Resilience vs. max number of compromised sensing nodes with 500 (Simulation)}
+ \vspace{-0.4cm}
+\end{minipage}
+\end{figure*}
+
+%\subsubsection{Filtering Capability}
+
+%Recall that filtering capability is defined as the average forwarded hops needed to filter a false measurement report. %Obviously, the smaller are hops of the reports being forwarded, the greater filtering capacity the scheme achieves.
+%{\em Filtering Capability.}
+Fig.~\ref{Baveragehops} and Fig.~\ref{simulationAFH} show the
+average hops that the measurement reports are forwarded vs. the
+number of compromised sensing nodes in term of analysis and
+simulation, respectively. As we can see, when the number of
+compromised sensing nodes increases, the average forwarded hops of
+PCREF increases slowly while others increase rapidly. When the
+number of compromised sensing nodes is less than $30$ (i.e., $3\%$
+of the total number of nodes), the average forwarded hops of PCREF
+is one hop larger than that of LBRS and LEDS. The reason is that
+LBRS and LEDS rely on the static routes and achieve higher filtering
+efficiency within first several forwarded hops. However, the
+specific routes make LEDS and LBRS vulnerable, because once the
+attacker damages the route (e.g., jamming), the measurement report
+could not be transmitted to the controller on time, posing the
+degradation of system performance.
+
+%\subsubsection{Resilience}
+
+%Recall that resilience to the attack is measured by the ratio of compromised clusters (or cells). The compromised cluster (or cell) refers to the one where more than $T-1$ sensing nodes are compromised and the forged measurement reports from that cluster will not be detected by intermediate nodes. Obviously, the lower the ratio, the higher the resilience achieves.
+%{\em Resilience.}
+Fig.~\ref{Brate1} and Fig.~\ref{Brate2} show the analytical results
+of the ratio of successful times in SEF and the percentages of
+compromised components (cells or clusters) of GRSEF, LBRS, LEDS, and
+PCREF given the total number of compromised sensing nodes of $200$
+and $500$, respectively. Fig.~\ref{simulationR1} and
+Fig.~\ref{simulationR2} show the simulation results in these two
+scenarios. From Fig.~\ref{Brate1} and Fig.~\ref{simulationR1}, we
+can see that because of $T$-threshold limitation, the ratio of
+compromised components of SEF approaches to $100\%$ when more than
+$10$ nodes (i.e., $1\%$ of the total number of nodes) are
+compromised, and the ratio of PCREF and LEDS are obvious less than
+these of LBRS and GRSEF. In Fig.~\ref{simulationR2} and
+Fig.~\ref{Brate2}, when the number of compromised nodes is $500$
+(i.e., $50\%$ of the total number of nodes), the ratio of
+compromised clusters for PCREF and LEDS approach to $60\%$ and
+$80\%$, and that of PCREF is always better than that of LEDS. As we
+can see, PCREF achieves the highest resilience to the increased
+number of compromised sensing nodes without relying on the static
+routes and node localization.
+
+\vspace{-2mm}
+\section{Related Works}\label{sec:relate}
+\vspace{-2mm}
+
+To mitigate the false data injected by attackers in sensor networks, a number of en-route filtering schemes have been developed \cite{SEF,LBRS,GRSEF,IHA,CCEF,LEDS,DEFS,EAB}. %Most of these schemes are based on $T$ authentication, i.e., a %legitimate data report must carry at least $T$ valid message authentication codes (MACs) from different nodes. $T$ is a %threshold and predefined before the sensor networks are deployed. When a report is transmitted to the sink or the %controller along the route, each forwarding node determines whether $T$ valid MACs are attached to the report. If not, %the report is determined as the false data and is dropped; otherwise the report is forwarded to next node. This process %ensures that false data can be filtered along the route as quickly as possible before arriving at the sink or the %controller.
+SEF \cite{SEF} and IHA \cite{IHA} are the first two proposed schemes to carry out en-route filtering of false reports. For example, SEF divides nodes into $n$ groups via non-overlapping key partitions and nodes in the same partition share authentication key with a probability, only the intermediate node sharing authentication key with source nodes can validate the report. %IHA uses node association to establish authentication keys shared between the %intermediate node and source nodes and verifies the report via the interleaved hop-by-hop authentication.
+Both SEF and IHA have the $T$-threshold limitation. %(i.e., if more than $T$ partitions are compromised, which can generate $T$ different valid MACs for report, the whole area will be compromised).
+LBRS \cite{LBRS} and LEDS \cite{LEDS} avoid the $T$-threshold limitation through the cell-based report generation and location-ware key generation techniques. However, those schemes introduce the node localization and node association based on the statically configured routes or conforming bean model. This makes longer time to stabilize with a large amount of energy resource consumption. %and they are vulnerable to malicious attacks. All these limit their usage to %CPS.
+%There are other en-route filtering schemes. For example,
+CCEF \cite{CCEF} introduced the commutative cipher instead of sharing symmetric key to en-route filter false data. %By using public key, CCEF avoids the $T$-threshold limitation, but %it relies on static routes and node localization. Because of large number of expensive public key operations, %measurement data cannot be delivered in real time.
+EAB \cite{EAB} introduces authentication bitmap, instead of using MAC as the proof to verify the reports. It also relies on the statical data dissemination routes, which is vulnerable to attacks. %GRSEF \cite{GRSEF} avoids $T$-threshold limitation through the location-ware key generation in the same way as LBRS and removes the dependence on the static routes through randomly grouping the authentication key with multi-axis division technique. However, it relies on node localization and achieves lower resilience to the number of compromised nodes. %DEFS \cite{DEFS} introduces the key %generation, key dissemination, and report forwarding phases and can filter false data as early as possible via using %Hill Climbing technique. %DEFS uses various routing protocols and does not rely on node localization. However, DEFS achieves lower resilience.
+As we can see, the existing schemes either have $T$-threshold
+limitation, or rely on node localization, node association and
+statically configured routes, which limited their usage to CPNS for monitoring mobile physical components and systems. Because en-route filtering problem was originally studied in 2004 \cite{IHA,SEF}, we only list the most related literatures after 2004.
+
+The polynomial-based technique has been used for applications \cite{Percom,PPKES,CRMA}. Work in cite{Percom} and \cite{PPKES} proposed the perturbation number and perturbation polynomial-based techniques for compromise-resilient key management. \cite{CRMA} proposed a perturbation polynomial-based technique to authenticate messages. This scheme detects the report modified en-route effectively, but cannot deal with the forged reports injected by comprised nodes, because the attacker can obtain the authentication polynomial stored in the compromised node and successfully forge valid authentication information attached in the reports. %This causes the intermediate nodes to fail to filter the false messages.
+Different from the existing research, we develop the polynomial-based technique to conduct the en-route filtering against false data injection attacks.
+
+\vspace{-2mm}
+\section{Conclusion}\label{sec:conclusion}
+\vspace{-1mm}
+
+In this paper, we proposed a {\em Polynomial-based Compromi-sed-Resilient En-route Filtering scheme (PCREF)}, which can filter false data effectively and achieve high resilience to the number of compromised nodes without relying on static routes and node localization. PCREF adopts polynomials for endorsing measurement reports to improve resilience to the node impersonating attacks. Each node stores two types of polynomials: authentication polynomial and check polynomial derived by primitive polynomial, and used for endorsing and verifying the measurement reports, respectively. We develop techniques to effectively manage authentication information and filter out the false measurement reports. %We develop a cluster-based primitive polynomial assignment to limit the effect of compromised nodes to a small area.
+Via both theoretical analysis and simulation experiments, our data show that our schemes achieves better filtering capacity and resilience to the large number of compromised nodes in comparison with the existing schemes.
+
+\bibliographystyle{abbrv}
+%\vspace{3mm}
+\bibliography{refs}
+
+%\section*{Appendix A: Algorithms}
+%\begin{algorithm}[htb]
+%\caption{The Measurement Report Transmission}\label{Sending}
+%\begin{algorithmic}[1]
+%\REQUIRE The measurement report $R$, the cluster-head $CH$, $n$
+%cluster sensing nodes $u_i$, and the first intermediate node $v$
+%along the forwarding route. \STATE $CH$ sends $R$ to $v$; \STATE All
+%$u_i$ eavesdrop $R$ and detect whether the authentication
+%information is correct; \IF {Not all authentication information is
+%correct} \STATE \COMMENT{$R$ is forged report} \STATE Send the
+%warning message to $v$ to discard report;
+% \STATE Exit;
+% \ENDIF
+%\end{algorithmic}
+%\end{algorithm}
+
+%\begin{algorithm}[!h]
+%\caption{En-route Filtering}\label{Filtering}
+%\begin{algorithmic}[1]
+%\REQUIRE The measurement report $R$, intermediate node $v$ and $w$
+%along the forwarding route, and $w$ is the next hop of $v$ along the
+%forwarding route. \STATE Node $v$ receives the report $R$;
+%\IF{$Time$ is not fresh} \STATE\COMMENT{$R$ does not meet
+%\emph{Condition 1}} \STATE Drop the report $R$; \STATE Exit;
+%\ELSIF{$verf_i^v(x,z)$ is included in node $v$} \STATE Get the
+%number of different MAP, $j$; \IF{$j<T$} \STATE\COMMENT{$R$ does not
+%meet \emph{Condition 2}}\STATE Drop the report $R$; \STATE Exit;
+%\ELSE \STATE $z=H\left((E)_{K_{C_i}}\right)$; \FOR{$m=1; m\leq T;
+%m++$} \STATE $A_i^{u_m,v}=\alpha
+%f_i(u_m,v,H\left((E)_{K_{C_i}}\right))$; \STATE $V_i^{v,u_m}=\beta
+%f_i(u_m,v,H\left((E)_{K_{C_i}}\right))$; \STATE
+%$q=V_i^{v,u_m}/A_i^{u_m,v}$; \IF{$q$ does not belong to
+%$\{2^1,2^2,\cdots,2^7\}$}\STATE\COMMENT{$R$ does not meet
+%\emph{Condition 3}} \STATE Drop the report $R$; \STATE Exit; \ENDIF
+%\ENDFOR \STATE\COMMENT{$R$ is legitimate} \STATE Forward report to
+%next intermediate node $w$; \ENDIF \ELSE\STATE\COMMENT{$v$ could not
+%verify $R$} \STATE Forward report to next intermediate node $w$;
+%\ENDIF
+%\end{algorithmic}
+%\end{algorithm}
+
+\section*{Appendix A: Overhead Analysis }
+In this appendix, we analyze the performance of PCREF in term of the
+storage overhead and energy overhead.
+
+\textbf{Storage Overhead:} In PCREF, each sensing node stores
+the authentication polynomial of the cluster where it belongs and
+$P\cdot(N_s/n)$ check polynomials of other clusters, and each
+forwarding node stores $P\cdot(N_s/n)$ check polynomials, where
+$N_s/n$ is the number of components. Hence, each node stores at most
+(1+$P\cdot(N_s/n)$) polynomials derived by the primitive polynomial
+and two unknown parameters in each of the polynomial. In our scheme,
+each node only stores the coefficients of the polynomial. According
+to Equation~(\ref{auth(y,z)}) and (\ref{verf(x,z)}), each node only
+stores $D^i_{ms}$ and $G^i_{ls}$. Let $n_c$ is be the number of
+coefficients stored in each node and we have
+$n_c=(n_y+1)\cdot(n_z+1)+P\cdot\frac{N_s}{n}\cdot(n_x+1)\cdot(n_z+1)$.
+
+Each sensing node stores one cluster key shared with its
+cluster-head and multiple keys shared with its one-hop neighbors,
+while each forwarding node stores multiple keys shared with its
+one-hop neighbors. To simplify our analysis, we assume that all
+monitored components are uniformly distributed in the physical
+system, and all nodes are uniformly deployed. The sensor node
+deployment area, the communication radius of the sensor node, and
+the max number of keys stored in a node are denoted as $S_A$, $R_t$
+and $n_k$, respectively. We have $n_k=2+(N_s+N_f)\cdot\frac{\pi
+R^2_t}{S_A}$, where $N_f$ represents the number of forwarding nodes
+in the system. Note that the coefficient and key can be represented
+by $16$ bits and $64$ bits, respectively. The total storage overhead
+of PCREF becomes
+\begin{equation}\label{Ostorage}
+O_{storage}=64\cdot n_k + 16\cdot n_c.
+\end{equation}
+For example, in the system in $500\ast500$ area with $100$ monitored
+components, each component is monitored by $10$ sensing nodes with
+communication radius of $50m$, and the number of forwarding nodes is
+equal to the number of sensing nodes. The sharing rate of the check
+polynomial, say $P$, is $0.2$, the highest power of unknown
+parameters of the primitive polynomial, say $n_x$, $n_y$, $n_z$, are
+$2$, which are the typical value of them. In this scenario,
+according to Equation~(\ref{Ostorage}), the storage overhead of each
+node in PCREF is $7056$ bits, i.e., $882$B. This means that only
+less than 1Kb memory is required for each sensing node to store the
+authentication information. Even with a large network, the storage
+overhead for PCREF can be easily managed by the sensing nodes.
+
+\textbf{Energy Cost Overhead:} The false measurement reports
+injected by the attacker not only lead to the wrong system state
+estimation, but also consume extra energy of nodes because of
+forwarding the false measurement report. Hence, filtering the false
+measurement reports can reduce the energy cost of nodes. In the
+following, we analyze the energy cost of PCREF using the same model
+as SEF \cite{SEF}.
+
+Let $L_r$, $L_c$, $L_u$, $L_i$, $L_a$ and $L_{Time}$ be the lengths
+of original reports, cluster ID, node ID, local ID, MAP, and
+timestamp, respectively. The length of a measurement report is
+denoted as $L_M = L_r+L_c+T \cdot (L_i+L_u+L_a)+ L_{Time}$, where
+$H$ and $e$ represent the average forwarded hops from the source
+cluster to the controller and the energy consumption of sensor node
+of receiving and forwarding one bit, respectively, and the ratio of
+legitimate reports and false reports is $1:\lambda$. Without our
+scheme, all reports are forwarded $H$ hops. In our scheme, only the
+legitimate reports are forwarded $H$ hops and false reports are
+forwarded $\overline{h}$ hops uniformly. Let $E$ and $E'$ be the
+communication energy consumption with and without our scheme,
+respectively. We have $E=H\cdot(1+\lambda)\cdot L_r\cdot e$ and
+$E'=(H+\overline{h}\lambda)\cdot L_M\cdot e$,%\begin{align*}
+%%E=&H\cdot(1+\lambda)\cdot L_r\cdot e,  \\
+%%E'=&(H+\overline{h}\lambda)\cdot L_M\cdot e,
+%%\end{align*}
+where $\overline{h}$ represents the average forwarded hops of the
+false measurement reports% derived from Equation~(\ref{averageh}).
+In
+sensor nodes, because the energy consumption for computation is much
+smaller than the energy consumption for communication, we only
+consider the energy consumption for communication.
+
+Fig.~\ref{saving} shows the energy cost vs. the number of
+compromised nodes and the ratio of legitimate reports and false
+reports with $1000$ monitored components in the system. In the
+setting, $L_r$, $L_c$, $L_u$, $L_i$, $L_a$ and $L_{Time}$ are $192$
+bits, $8$ bits, $4$ bits, $10$ bits, $64$ bits and $8$ bits,
+respectively, the number of MAPs attached in the report is $5$, the
+number of redundant sensing nodes is $10$, the average forwarded
+hops $H$ is $20$, and $e$ is selects as the unit "$1$" based on the
+energy consumption of sensor node of receiving and forwarding one
+bit. To evaluate the energy cost of PCREF, we assume that the number
+of sensing nodes equals to the number of forwarding nodes in the
+system, and the numbers of compromised nodes in both the sensing and
+forwarding nodes are equal and given by $\frac{1}{2}N_c$. From
+Fig.~\ref{saving}, we can see that our scheme can reduce the energy
+consumption in comparison with the case where our scheme is not
+used. As the number of compromised nodes increases, $E$ grow
+linearly while $E'$ is always lower than $E$. The reason is that,
+with the increased number of compromised nodes, PCREF can always
+filter them out within a few forwarded hops and the communication
+overhead and energy consumption can be largely reduced.
+
+%\section*{Appendix C: MAP Forging Successful Ratio}
+
+%Recall that PCREF verifies the correctness of measurement report via
+%the correct proportional relationship between the authentication
+%polynomial and the check polynomial. In PCREF, the MAP carried in
+%the measurement report is a polynomial with one parameter $y$ and
+%has
+%\begin{align}
+%MAP=auth_i^{u}(y,H((E)_{K_{C_i}}))=\sum\limits_{j=0}^{n_y}D_jy^j,
+%\end{align}
+%where $n_y$ is the highest power of $y$, and $D_j$ is the
+%corresponding coefficient. Hence, the forged MAP can bypass the
+%detection of intermediate nodes only if all forged $D'_j$ satisfy
+%the proportional relationship with the corresponding $D_j$. Because
+%PCREF only transmits the coefficients of MAP, we assume that using
+%$l$ bytes to transmit one MAP, and the attacker only has eight
+%choices of all $D'_j$ to successfully forge a MAP according to the
+%filtering rule of PCREF, when the attacker does not have the
+%knowledge of authentication information. Then, the MAP forging
+%successful ratio can be derived by,
+%\begin{equation}\label{Pw}
+%    P_w=\left(\frac{8}{2^l}\right)^{T-x}=\frac{1}{2^{(l-3)(T-x)}},
+%\end{equation}
+%where $T$ is the number of MAPs carried in a measurement report,
+%$x(x<T)$ is the number of legitimate MAPs that the attacker can
+%derive through the authentication polynomials of compromised nodes.
+%The size of $l$ is related to the primitive polynomial, and it
+%usually has $64$ bits, and the maximal value of $x$ is $T-1$. We can
+%get $P_w= 1/2^{61}$ from the previous Equation, %~(\ref{Pw}),
+%which is very small and can be ignored. Hence, in the analysis below, with no
+%authentication information revealing to the attacker, we only
+%consider that the forged MAP will be detected by the intermediate
+%node, which has the corresponding check polynomial.
+
+\end{document}
